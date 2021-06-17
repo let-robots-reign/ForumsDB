@@ -3,6 +3,7 @@ import model from './model';
 import {IUser} from './interface';
 import {IError, IReturn, IReturnQuery} from '../base';
 import {DBConflictCode} from '../../utils/db_codes';
+import {IGetForumData} from '../forum/interface';
 
 class UserController {
     create = async (req: e.Request, res: e.Response) => {
@@ -98,14 +99,14 @@ class UserController {
         res.status(200).json(user);
     };
 
-    // forumUsers = async (req: e.Request, res: e.Response, data: IGetForumData) => {
-    //     const rq = await model.forumUsers(data);
-    //     if (rq.isError) {
-    //         res.status(400).json(<IError>{ message: rq.message });
-    //         return;
-    //     }
-    //     res.status(200).json(rq.data.rows);
-    // };
+    forumUsers = async (req: e.Request, res: e.Response, data: IGetForumData) => {
+        const rq = await model.forumUsers(data);
+        if (rq.isError) {
+            res.status(400).json(<IError>{ message: rq.message });
+            return;
+        }
+        res.status(200).json(rq.data.rows);
+    };
 
     getUser = async (req: e.Request, res: e.Response, nickname: string) => {
         const user = await model.getOne(nickname, false);

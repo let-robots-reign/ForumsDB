@@ -1,6 +1,7 @@
 import db from '../../utils/db';
 import {IUser} from './interface';
 import {IQuery} from '../base';
+import {IGetForumData} from '../forum/interface';
 
 class UserModel {
     async create(user: IUser) {
@@ -30,29 +31,29 @@ class UserModel {
         return db.sendQuery(query);
     }
 
-    // async forumUsers(data: IGetForumData) {
-    //     let sinceExpr = '';
-    //     if (data.since) {
-    //         sinceExpr = `AND nickname ${data.desc ? '<': '>'} '${data.since}' COLLATE 'C'`;
-    //     }
-    //
-    //     const query: IQuery = {
-    //         name: '',
-    //         text: `
-    //             SELECT about, email, fullname, nickname
-    //             FROM users
-    //             WHERE nickname IN (
-    //               SELECT author FROM user_posts
-    //               WHERE forum = $1
-    //             )
-    //             ${sinceExpr}
-    //             ORDER BY nickname COLLATE 'C' ${data.desc ? 'DESC' : 'ASC'}
-    //             ${data.limit ? `LIMIT ${data.limit}`: ''}
-    //         `,
-    //         values: [data.slug]
-    //     };
-    //     return db.sendQuery(query);
-    // }
+    async forumUsers(data: IGetForumData) {
+        let sinceExpr = '';
+        if (data.since) {
+            sinceExpr = `AND nickname ${data.desc ? '<': '>'} '${data.since}' COLLATE 'C'`;
+        }
+
+        const query: IQuery = {
+            name: '',
+            text: `
+                SELECT about, email, fullname, nickname
+                FROM users
+                WHERE nickname IN (
+                  SELECT author FROM user_posts
+                  WHERE forum = $1
+                )
+                ${sinceExpr}
+                ORDER BY nickname COLLATE 'C' ${data.desc ? 'DESC' : 'ASC'}
+                ${data.limit ? `LIMIT ${data.limit}`: ''}
+            `,
+            values: [data.slug]
+        };
+        return db.sendQuery(query);
+    }
 
     async getOne(nickname: string, full: boolean = true) {
         const query: IQuery = {
