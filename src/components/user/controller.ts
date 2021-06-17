@@ -1,8 +1,8 @@
 import e from 'express';
 import model from './model';
 import {IUser} from './interface';
-import {IError, IReturn, IReturnQuery} from '../components/base';
-import {DBConflictCode} from '../utils/db_codes';
+import {IError, IReturn, IReturnQuery} from '../base';
+import {DBConflictCode} from '../../utils/db_codes';
 
 class UserController {
     create = async (req: e.Request, res: e.Response) => {

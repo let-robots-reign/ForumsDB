@@ -1,6 +1,6 @@
-import db from '../utils/db';
+import db from '../../utils/db';
 import {IUser} from './interface';
-import {IQuery} from '../components/base';
+import {IQuery} from '../base';
 
 class UserModel {
     async create(user: IUser) {
