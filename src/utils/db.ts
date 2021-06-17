@@ -1,5 +1,5 @@
-import {Pool} from "pg";
-import {IQuery, IReturnQuery} from "../components/base";
+import {Pool} from 'pg';
+import {IQuery, IReturnQuery} from '../components/base';
 
 class Database {
     private readonly pool: Pool;
