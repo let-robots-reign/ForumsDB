@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "tsc": "tsc -b ./tsconfig.json",
-    "lint": "tslint 'src/**/*.ts'",
+    "lint": "tslint 'src/**/*.ts' --fix",
     "start": "npm run tsc && npm run lint && node ./dist/index.js"
   },
   "repository": {

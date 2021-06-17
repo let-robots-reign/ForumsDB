@@ -3,6 +3,7 @@ import model from './model';
 import {IVote} from './interface';
 import {DBNullColumnCode} from '../../utils/db_codes';
 import {IError} from '../base';
+import {IThread} from '../thread/interface';
 
 class VoteController {
     create = async (req: e.Request, res: e.Response, thread: IThread) => {
