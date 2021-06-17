@@ -26,6 +26,7 @@
       false
     ],
     "import-spacing": false,
+    "no-trailing-whitespace": false,
     "object-literal-sort-keys": false,
     "no-console": false,
     "no-angle-bracket-type-assertion": false

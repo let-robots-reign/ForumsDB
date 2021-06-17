@@ -32,3 +32,5 @@ class Database {
         return response;
     }
 }
+
+export default new Database();
