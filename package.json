@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "tsc": "tsc -b ./tsconfig.json",
+    "start": "tsc && node ./dist/index.js",
+    "lint": "tslint 'src/**/*.ts'"
   },
   "repository": {
     "type": "git",
