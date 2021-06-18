@@ -1,6 +1,6 @@
-import db from '../../../config/database';
-import { IQuery } from '../base/interfaces';
-import { IVote } from './interface';
+import db from '../../utils/db';
+import {IQuery} from '../base';
+import {IVote} from './interface';
 
 class VoteModel {
     async createOrUpdate(vote: IVote) {

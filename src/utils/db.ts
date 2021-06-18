@@ -1,5 +1,5 @@
 import {Pool} from 'pg';
-import {IQuery, IReturnQuery} from '../rest/components/base/interfaces';
+import {IQuery, IReturnQuery} from '../components/base';
 
 class Database {
     private readonly pool: Pool;
@@ -22,10 +22,6 @@ class Database {
         try {
             response.data = await client.query(query);
         } catch (e) {
-            // console.error(`Database error: ${query.text}`);
-            // console.error(`Values: (${query.values})`);
-            // console.error(`Error: ${e.message}`);
-
             response.isError = true;
             response.code = e.code;
             response.message = e.message;

@@ -1,9 +1,9 @@
-import { QueryResult } from 'pg';
+import {QueryResult} from 'pg';
 
 export interface IQuery {
     name: string;
     text: string;
-    values: (string|number)[];
+    values: (string | number)[];
     rowMode?: string;
 }
 

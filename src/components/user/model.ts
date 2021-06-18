@@ -1,7 +1,7 @@
-import db from '../../../config/database';
-import { IQuery } from '../base/interfaces';
-import { IGetForumData } from '../forum/interface';
-import { IUser }  from './interface';
+import db from '../../utils/db';
+import {IQuery} from '../base';
+import {IGetForumData} from '../forum/interface';
+import {IUser} from './interface';
 
 class UserModel {
     async create(user: IUser) {
@@ -18,12 +18,11 @@ class UserModel {
         const query: IQuery = {
             name: 'update_user',
             text: `
-                UPDATE users SET 
-                    about = COALESCE($1, about), 
-                    email = COALESCE($2, email), 
-                    fullname = COALESCE($3, fullname) 
-                WHERE nickname = $4 
-                RETURNING *  
+                UPDATE users
+                SET about    = COALESCE($1, about),
+                    email    = COALESCE($2, email),
+                    fullname = COALESCE($3, fullname)
+                WHERE nickname = $4 RETURNING *
             `,
             values: Object.values(user)
         };
@@ -34,7 +33,7 @@ class UserModel {
     async forumUsers(data: IGetForumData) {
         let sinceExpr = '';
         if (data.since) {
-            sinceExpr = `AND nickname ${data.desc ? '<': '>'} '${data.since}' COLLATE "C"`;
+            sinceExpr = `AND nickname ${data.desc ? '<' : '>'} '${data.since}' COLLATE "C"`;
         }
 
         const query: IQuery = {
@@ -48,7 +47,7 @@ class UserModel {
                 )
                 ${sinceExpr}
                 ORDER BY nickname COLLATE "C" ${data.desc ? 'DESC' : 'ASC'}
-                ${data.limit ? `LIMIT ${data.limit}`: ''}
+                ${data.limit ? `LIMIT ${data.limit}` : ''}
             `,
             values: [data.slug]
         };
@@ -57,8 +56,8 @@ class UserModel {
 
     async getOne(nickname: string, full: boolean = true) {
         const query: IQuery = {
-            name: `get_one_user_${full ? '1': '2'}`,
-            text: `SELECT ${full ? 'about, email, fullname, nickname': 'nickname'} 
+            name: `get_one_user_${full ? '1' : '2'}`,
+            text: `SELECT ${full ? 'about, email, fullname, nickname' : 'nickname'} 
                     FROM users WHERE nickname = $1`,
             values: [nickname]
         };

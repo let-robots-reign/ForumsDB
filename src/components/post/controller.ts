@@ -1,8 +1,8 @@
 import e from 'express';
-import model  from './model';
-import { IPost, IPostFilter, IPostUpdate } from './interface';
-import { IError } from '../base/interfaces';
-import { IThreadData } from '../thread/interface';
+import model from './model';
+import {IPost, IPostFilter, IPostUpdate} from './interface';
+import {IError} from '../base';
+import {IThreadData} from '../thread/interface';
 
 class PostController {
     create = async (req: e.Request, res: e.Response, data: IThreadData) => {
@@ -15,14 +15,14 @@ class PostController {
         const rq = await model.insertSeveral(posts, data);
         if (rq.isError) {
             if (rq.message.includes('author')) {
-                res.status(404).json(<IError>{ message: `Author not found` });
+                res.status(404).json(<IError>{message: `Author not found`});
             } else {
-                res.status(409).json(<IError>{ message: rq.message });
+                res.status(409).json(<IError>{message: rq.message});
             }
             return;
         }
 
-        for (let i=0; i < posts.length; i++) {
+        for (let i = 0; i < posts.length; i++) {
             const p = rq.data.rows[i];
             posts[i].forum = data.forum;
             posts[i].thread = data.threadId;
@@ -37,15 +37,15 @@ class PostController {
         const filter: IPostFilter = {
             threadId: data.threadId,
             forum: data.forum.toString(),
-            limit: req.query.limit,
-            since: req.query.since,
-            sort: req.query.sort,
-            desc: req.query.desc ? JSON.parse(req.query.desc): req.query.desc
+            limit: (req.query.limit) ? +req.query.limit : 100,
+            since: (req.query.since) ? +req.query.since : undefined,
+            sort: (req.query.sort) ? <string>req.query.sort : 'flat',
+            desc: req.query.desc ? JSON.parse(<string>req.query.desc) : req.query.desc
         };
 
         const rq = await model.getThreadPosts(filter);
         if (rq.isError) {
-            res.status(400).json(<IError>{ message: rq.message });
+            res.status(400).json(<IError>{message: rq.message});
             return;
         }
 
@@ -53,48 +53,48 @@ class PostController {
     };
 
     details = async (req: e.Request, res: e.Response) => {
-        const id = req.params.id;
-        const related = req.query.related || '';
+        const id = +req.params.id;
+        const related = <string>req.query.related || '';
 
         const rq = await model.fullData(id);
         if (rq.isError) {
-            res.status(400).json(<IError>{ message: rq.message });
+            res.status(400).json(<IError>{message: rq.message});
             return;
         }
 
         if (!rq.data.rowCount) {
-            res.status(404).json(<IError>{ message: `Post by id ${id} not found` });
+            res.status(404).json(<IError>{message: `Post by id ${id} not found`});
             return;
         }
 
         const postFull = rq.data.rows[0].post;
-        if (!related.includes('user')) delete postFull['author'];
-        if (!related.includes('forum')) delete postFull['forum'];
-        if (!related.includes('thread')) delete postFull['thread'];
+        if (!related.includes('user')) delete postFull.author;
+        if (!related.includes('forum')) delete postFull.forum;
+        if (!related.includes('thread')) delete postFull.thread;
 
         res.json(postFull);
     };
 
     update = async (req: e.Request, res: e.Response) => {
         const post: IPostUpdate = {
-            id: req.params.id,
+            id: +req.params.id,
             message: req.body.message
         };
 
         const rq = await model.update(post);
         if (rq.isError) {
-            res.status(400).json(<IError>{ message: rq.message });
+            res.status(400).json(<IError>{message: rq.message});
             return;
         }
 
         if (!rq.data.rowCount) {
-            res.status(404).json(<IError>{ message: `Post by id ${post.id} not found` });
+            res.status(404).json(<IError>{message: `Post by id ${post.id} not found`});
             return;
         }
 
         const upPost = rq.data.rows[0];
-        if (!upPost.parent) delete upPost['parent'];
-        if (!upPost.isEdited) delete upPost['isEdited'];
+        if (!upPost.parent) delete upPost.parent;
+        if (!upPost.isEdited) delete upPost.isEdited;
         res.json(upPost);
     };
 }

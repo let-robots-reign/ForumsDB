@@ -1,20 +1,19 @@
-import db from '../../../config/database';
-import { IQuery } from '../base/interfaces';
+import db from '../../utils/db';
+import {IQuery} from '../base';
 
 class ServiceModel {
     async getTablesStatus() {
         const query: IQuery = {
             name: 'get_tables_status',
             text: `
-                  SELECT
-                        json_build_object(
-                            'forum', (SELECT COUNT(*) FROM forum),
-                            'user', (SELECT COUNT(*) FROM users),
-                            'thread', (SELECT COUNT(*) FROM thread),
-                            'post', (SELECT COUNT(*) FROM post)
-                        )
-                  as status
-                `,
+                SELECT json_build_object(
+                               'forum', (SELECT COUNT(*) FROM forum),
+                               'user', (SELECT COUNT(*) FROM users),
+                               'thread', (SELECT COUNT(*) FROM thread),
+                               'post', (SELECT COUNT(*) FROM post)
+                           )
+                           as status
+            `,
             values: []
         };
         return db.sendQuery(query);

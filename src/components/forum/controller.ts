@@ -1,10 +1,10 @@
-import e from  'express';
+import e from 'express';
 import model from './model';
-import { DBConflictCode } from '../../../utils/constants';
-import userController   from '../user/controller';
+import {DBConflictCode} from '../../utils/db_codes';
+import userController from '../user/controller';
 import threadController from '../thread/controller';
-import { IForum, IGetForumData } from './interface';
-import { IError, IReturn, IReturnQuery } from '../base/interfaces';
+import {IForum, IGetForumData} from './interface';
+import {IError, IReturn, IReturnQuery} from '../base';
 
 class ForumController {
     create = async (req: e.Request, res: e.Response) => {
@@ -25,7 +25,7 @@ class ForumController {
             if (+rq.code === DBConflictCode) {
                 const confRes: IReturnQuery = await model.getOne(forum.slug);
                 if (confRes.isError) {
-                    res.status(400).json(<IError>{ message: confRes.message });
+                    res.status(400).json(<IError>{message: confRes.message});
                     return;
                 }
 
@@ -33,7 +33,7 @@ class ForumController {
                 return;
             }
 
-            res.status(400).json(<IError>{ message: rq.message });
+            res.status(400).json(<IError>{message: rq.message});
             return;
         }
 
@@ -43,18 +43,18 @@ class ForumController {
     details = async (req: e.Request, res: e.Response) => {
         const r = this.getSlug(req);
         if (r.error) {
-            res.status(400).json(<IError>{ message: 'Slug is not given' });
+            res.status(400).json(<IError>{message: 'Slug is not given'});
             return;
         }
 
         const rq = await model.getOne(r.data);
         if (rq.isError) {
-            res.status(400).json(<IError>{ message: rq.message });
+            res.status(400).json(<IError>{message: rq.message});
             return;
         }
 
         if (!rq.data.rowCount) {
-            res.status(404).json(<IError>{ message: `Forum by slug ${r.data} not found` });
+            res.status(404).json(<IError>{message: `Forum by slug ${r.data} not found`});
             return;
         }
 
@@ -64,26 +64,26 @@ class ForumController {
     threads = async (req: e.Request, res: e.Response) => {
         const r = this.getSlug(req);
         if (r.error) {
-            res.status(400).json(<IError>{ message: 'Slug is not given' });
+            res.status(400).json(<IError>{message: 'Slug is not given'});
             return;
         }
 
         const forum = await model.getOne(r.data, false);
         if (forum.isError) {
-            res.status(400).json(<IError>{ message: forum.message });
+            res.status(400).json(<IError>{message: forum.message});
             return;
         }
 
         if (!forum.data.rowCount) {
-            res.status(404).json(<IError>{ message: `Forum by ${r.data} not found` });
+            res.status(404).json(<IError>{message: `Forum by ${r.data} not found`});
             return;
         }
 
         const data: IGetForumData = {
             slug: r.data,
-            limit: req.query.limit,
-            since: req.query.since,
-            desc: req.query.desc ? JSON.parse(req.query.desc): false
+            limit: (req.query.limit) ? +req.query.limit : 100,
+            since: (req.query.since) ? <string>req.query.since : undefined,
+            desc: req.query.desc ? JSON.parse(<string>req.query.desc) : false
         };
 
         const obj = req.path.split('/')[2];
@@ -97,7 +97,7 @@ class ForumController {
     createThread = async (req: e.Request, res: e.Response) => {
         const r = this.getSlug(req);
         if (r.error) {
-            res.status(400).json(<IError>{ message: 'Slug is not given' });
+            res.status(400).json(<IError>{message: 'Slug is not given'});
             return;
         }
 
@@ -105,17 +105,17 @@ class ForumController {
         const rf = await model.getOne(slug, false);
 
         if (rf.isError) {
-            res.status(400).json(<IError>{ message: rf.message });
+            res.status(400).json(<IError>{message: rf.message});
             return;
         }
 
         if (!rf.data.rowCount) {
-            res.status(404).json(<IError>{ message: `Forum ${slug} not found` });
+            res.status(404).json(<IError>{message: `Forum ${slug} not found`});
             return;
         }
 
         const forum: IForum = {
-            slug: rf.data.rows[0]['slug'],
+            slug: rf.data.rows[0].slug,
             title: '',
             user: ''
         };

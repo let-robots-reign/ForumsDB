@@ -3,12 +3,12 @@ export interface IForum {
     slug: string;
     threads?: number;
     title: string;
-    user: string|number;
+    user: string | number;
 }
 
 export interface IGetForumData {
     slug: string;
     limit: number;
-    since: string;
+    since?: string;
     desc: boolean;
 }

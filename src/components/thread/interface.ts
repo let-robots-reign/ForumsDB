@@ -1,7 +1,7 @@
 export interface IThread {
-    author: string|number;
+    author: string | number;
     created: string;
-    forum: string|number;
+    forum: string | number;
     message: string;
     slug: string;
     title: string;
