@@ -13,7 +13,7 @@ export interface IPostFilter {
     threadId: number;
     forum: string;
     limit: number;
-    since: number | undefined;
+    since?: number;
     sort: string;
     desc: boolean;
 }
