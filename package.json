@@ -6,7 +6,7 @@
   "scripts": {
     "tsc": "tsc -b ./tsconfig.json",
     "lint": "tslint 'src/**/*.ts' --fix",
-    "start": "npm run tsc && npm run lint && node ./dist/index.js"
+    "start": "npm run tsc && node ./dist/index.js"
   },
   "repository": {
     "type": "git",
