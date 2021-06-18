@@ -6,7 +6,8 @@ class ForumModel {
     async create(forum: IForum) {
         const query: IQuery = {
             name: 'create_forum',
-            text: `INSERT INTO forum (author, slug, title) VALUES ($1, $2, $3)`,
+            text: `INSERT INTO forum (author, slug, title)
+                   VALUES ($1, $2, $3)`,
             values: [forum.user, forum.slug, forum.title]
         };
 

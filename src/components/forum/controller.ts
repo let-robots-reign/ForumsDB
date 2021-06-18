@@ -6,8 +6,6 @@ import {IForum, IGetForumData} from './interface';
 import {DBConflictCode} from '../../utils/db_codes';
 import {IError, IReturn, IReturnQuery} from '../base';
 
-const DEFAULT_LIMIT = 100;
-
 class ForumController {
     create = async (req: e.Request, res: e.Response) => {
         const author = req.body.user;
@@ -83,7 +81,7 @@ class ForumController {
 
         const data: IGetForumData = {
             slug: r.data,
-            limit: req.query.limit ? +req.query.limit : DEFAULT_LIMIT,
+            limit: (req.query.limit) ? +req.query.limit : 100,
             since: <string>req.query.since,
             desc: req.query.desc ? JSON.parse(<string>req.query.desc) : false
         };
