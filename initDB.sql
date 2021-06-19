@@ -9,9 +9,10 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
+CREATE SCHEMA IF NOT EXISTS public;
+CREATE EXTENSION IF NOT EXISTS citext;
 
-CREATE FUNCTION public.check_post_parent() RETURNS trigger
+CREATE FUNCTION check_post_parent() RETURNS trigger
     LANGUAGE plpgsql
 AS
 $$
@@ -31,9 +32,9 @@ BEGIN
 END;
 $$;
 
-ALTER FUNCTION public.check_post_parent() OWNER TO zotov;
+ALTER FUNCTION check_post_parent() OWNER TO zotov;
 
-CREATE FUNCTION public.get_post_full(_id integer)
+CREATE FUNCTION get_post_full(_id integer)
     RETURNS TABLE
             (
                 post_full json
@@ -100,14 +101,14 @@ BEGIN
 END
 $$;
 
-ALTER FUNCTION public.get_post_full(_id integer) OWNER TO zotov;
+ALTER FUNCTION get_post_full(_id integer) OWNER TO zotov;
 
-CREATE FUNCTION public.update_post(msg text, _id integer)
+CREATE FUNCTION update_post(msg text, _id integer)
     RETURNS TABLE
             (
-                author    public.citext,
+                author    citext,
                 created   timestamp with time zone,
-                forum     public.citext,
+                forum     citext,
                 id        integer,
                 is_edited boolean,
                 message   text,
@@ -146,9 +147,9 @@ BEGIN
 END
 $$;
 
-ALTER FUNCTION public.update_post(msg text, _id integer) OWNER TO zotov;
+ALTER FUNCTION update_post(msg text, _id integer) OWNER TO zotov;
 
-CREATE FUNCTION public.update_post_quantity() RETURNS trigger
+CREATE FUNCTION update_post_quantity() RETURNS trigger
     LANGUAGE plpgsql
 AS
 $$
@@ -170,9 +171,9 @@ BEGIN
 END;
 $$;
 
-ALTER FUNCTION public.update_post_quantity() OWNER TO zotov;
+ALTER FUNCTION update_post_quantity() OWNER TO zotov;
 
-CREATE FUNCTION public.update_thread_quantity() RETURNS trigger
+CREATE FUNCTION update_thread_quantity() RETURNS trigger
     LANGUAGE plpgsql
 AS
 $$
@@ -194,9 +195,9 @@ BEGIN
 END;
 $$;
 
-ALTER FUNCTION public.update_thread_quantity() OWNER TO zotov;
+ALTER FUNCTION update_thread_quantity() OWNER TO zotov;
 
-CREATE FUNCTION public.update_thread_votes() RETURNS trigger
+CREATE FUNCTION update_thread_votes() RETURNS trigger
     LANGUAGE plpgsql
 AS
 $$
@@ -208,9 +209,9 @@ BEGIN
 END;
 $$;
 
-ALTER FUNCTION public.update_thread_votes() OWNER TO zotov;
+ALTER FUNCTION update_thread_votes() OWNER TO zotov;
 
-CREATE FUNCTION public.update_thread_votes2() RETURNS trigger
+CREATE FUNCTION update_thread_votes2() RETURNS trigger
     LANGUAGE plpgsql
 AS
 $$
@@ -222,9 +223,9 @@ BEGIN
 END;
 $$;
 
-ALTER FUNCTION public.update_thread_votes2() OWNER TO zotov;
+ALTER FUNCTION update_thread_votes2() OWNER TO zotov;
 
-CREATE FUNCTION public.update_vote(_author text, _thread integer, _voice integer) RETURNS integer
+CREATE FUNCTION update_vote(_author text, _thread integer, _voice integer) RETURNS integer
     LANGUAGE plpgsql
 AS
 $$
@@ -232,107 +233,107 @@ DECLARE
     _id        integer;
     _old_voice integer;
 BEGIN
-    SELECT voice, vid INTO _old_voice, _id FROM public.vote WHERE author = _author AND thread = _thread;
+    SELECT voice, vid INTO _old_voice, _id FROM vote WHERE author = _author AND thread = _thread;
     IF FOUND THEN
         IF _old_voice = _voice THEN
             RETURN 0;
         ELSE
-            UPDATE public.vote SET voice = _voice WHERE vid = _id;
+            UPDATE vote SET voice = _voice WHERE vid = _id;
             RETURN 2 * _voice;
         END IF;
     ELSE
-        INSERT INTO public.vote(author, thread, voice)
+        INSERT INTO vote(author, thread, voice)
         VALUES (_author, _thread, _voice);
         RETURN _voice;
     END IF;
 END;
 $$;
 
-ALTER FUNCTION public.update_vote(_author text, _thread integer, _voice integer) OWNER TO zotov;
+ALTER FUNCTION update_vote(_author text, _thread integer, _voice integer) OWNER TO zotov;
 
 SET default_tablespace = '';
 
 SET default_with_oids = false;
 
-CREATE TABLE public.users
+CREATE TABLE users
 (
     about    text          NOT NULL,
-    email    public.citext NOT NULL UNIQUE,
+    email    citext NOT NULL UNIQUE,
     fullname text          NOT NULL,
-    nickname public.citext NOT NULL UNIQUE
+    nickname citext NOT NULL UNIQUE
 );
 
 
-ALTER TABLE public.users
+ALTER TABLE users
     OWNER TO zotov;
 
-CREATE TABLE public.forum
+CREATE TABLE forum
 (
-    author  public.citext NOT NULL REFERENCES public.users (nickname),
-    slug    public.citext NOT NULL PRIMARY KEY UNIQUE,
+    author  citext NOT NULL REFERENCES users (nickname),
+    slug    citext NOT NULL PRIMARY KEY UNIQUE,
     threads integer DEFAULT 0,
     title   text          NOT NULL,
     posts   integer DEFAULT 0
 );
 
-ALTER TABLE public.forum
+ALTER TABLE forum
     OWNER TO zotov;
 
-CREATE TABLE public.thread
+CREATE TABLE thread
 (
     tid     serial        NOT NULL PRIMARY KEY,
-    forum   public.citext NOT NULL REFERENCES public.forum (slug),
-    author  public.citext NOT NULL REFERENCES public.users (nickname),
+    forum   citext NOT NULL REFERENCES forum (slug),
+    author  citext NOT NULL REFERENCES users (nickname),
     created timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    slug    public.citext UNIQUE,
+    slug    citext UNIQUE,
     message text          NOT NULL,
     title   text          NOT NULL,
     votes   integer                  DEFAULT 0
 );
 
 
-ALTER TABLE public.thread OWNER TO zotov;
+ALTER TABLE thread OWNER TO zotov;
 
-CREATE SEQUENCE public.tid
+CREATE SEQUENCE tid
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-ALTER TABLE public.tid OWNER TO zotov;
+ALTER TABLE tid OWNER TO zotov;
 
-ALTER SEQUENCE public.tid OWNED BY public.thread.tid;
+ALTER SEQUENCE tid OWNED BY thread.tid;
 
-CREATE TABLE public.post
+CREATE TABLE post
 (
     pid       serial        NOT NULL PRIMARY KEY,
     root      integer       NOT NULL   DEFAULT 0,
-    forum     public.citext NOT NULL REFERENCES public.forum (slug),
-    author    public.citext NOT NULL REFERENCES public.users (nickname),
-    thread    integer       NOT NULL REFERENCES public.thread (tid),
-    parent_id integer REFERENCES public.post (pid),
+    forum     citext NOT NULL REFERENCES forum (slug),
+    author    citext NOT NULL REFERENCES users (nickname),
+    thread    integer       NOT NULL REFERENCES thread (tid),
+    parent_id integer REFERENCES post (pid),
     is_edited boolean                  DEFAULT false,
     message   text          NOT NULL,
     created   timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     path      integer[]                DEFAULT '{}'::integer[]
 );
 
-ALTER TABLE public.post
+ALTER TABLE post
     OWNER TO zotov;
 
-CREATE SEQUENCE public.pid
+CREATE SEQUENCE pid
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-ALTER TABLE public.pid OWNER TO zotov;
+ALTER TABLE pid OWNER TO zotov;
 
-ALTER SEQUENCE public.pid OWNED BY public.post.pid;
+ALTER SEQUENCE pid OWNED BY post.pid;
 
-CREATE FUNCTION public.new_post() RETURNS trigger AS
+CREATE FUNCTION new_post() RETURNS trigger AS
 $$
 BEGIN
     NEW.path = NEW.path || (SELECT currval('pid'))::INTEGER;
@@ -345,86 +346,86 @@ $$
 
 CREATE TRIGGER new_post
     BEFORE INSERT
-    ON public.post
+    ON post
     FOR EACH ROW
-EXECUTE PROCEDURE public.new_post();
+EXECUTE PROCEDURE new_post();
 
-CREATE TABLE public.user_posts
+CREATE TABLE user_posts
 (
-    forum  public.citext NOT NULL REFERENCES public.forum (slug),
-    author public.citext NOT NULL REFERENCES public.users (nickname)
+    forum  citext NOT NULL REFERENCES forum (slug),
+    author citext NOT NULL REFERENCES users (nickname)
 );
 
-ALTER TABLE public.user_posts OWNER TO zotov;
+ALTER TABLE user_posts OWNER TO zotov;
 
-CREATE TABLE public.vote
+CREATE TABLE vote
 (
     vid    serial        NOT NULL PRIMARY KEY,
-    author public.citext NOT NULL REFERENCES public.users (nickname),
-    thread integer       NOT NULL REFERENCES public.thread (tid),
+    author citext NOT NULL REFERENCES users (nickname),
+    thread integer       NOT NULL REFERENCES thread (tid),
     voice  integer       NOT NULL
 );
 
-ALTER TABLE public.vote OWNER TO zotov;
+ALTER TABLE vote OWNER TO zotov;
 
-CREATE SEQUENCE public.vid
+CREATE SEQUENCE vid
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-ALTER TABLE public.vid OWNER TO zotov;
+ALTER TABLE vid OWNER TO zotov;
 
-ALTER SEQUENCE public.vid OWNED BY public.vote.vid;
+ALTER SEQUENCE vid OWNED BY vote.vid;
 
-ALTER TABLE ONLY public.thread
-    ALTER COLUMN tid SET DEFAULT nextval('public.tid'::regclass);
-ALTER TABLE ONLY public.vote
-    ALTER COLUMN vid SET DEFAULT nextval('public.vid'::regclass);
-ALTER TABLE ONLY public.post
-    ALTER COLUMN pid SET DEFAULT nextval('public.pid'::regclass);
+ALTER TABLE ONLY thread
+    ALTER COLUMN tid SET DEFAULT nextval('tid'::regclass);
+ALTER TABLE ONLY vote
+    ALTER COLUMN vid SET DEFAULT nextval('vid'::regclass);
+ALTER TABLE ONLY post
+    ALTER COLUMN pid SET DEFAULT nextval('pid'::regclass);
 
-CREATE INDEX index_on_root_posts_path ON public.post USING btree (root, path);
+CREATE INDEX index_on_root_posts_path ON post USING btree (root, path);
 
-CREATE INDEX index_on_posts_thread_id ON public.post USING btree (thread, pid);
+CREATE INDEX index_on_posts_thread_id ON post USING btree (thread, pid);
 
-CREATE UNIQUE INDEX index_on_threads_slug ON public.thread USING btree (slug);
+CREATE UNIQUE INDEX index_on_threads_slug ON thread USING btree (slug);
 
-CREATE UNIQUE INDEX index_on_user_posts ON public.user_posts USING btree (author, forum);
+CREATE UNIQUE INDEX index_on_user_posts ON user_posts USING btree (author, forum);
 
-CREATE INDEX index_on_user_posts_forum ON public.user_posts USING btree (forum);
+CREATE INDEX index_on_user_posts_forum ON user_posts USING btree (forum);
 
-CREATE UNIQUE INDEX index_on_users_nickname_c ON public.users USING btree (nickname COLLATE "C");
+CREATE UNIQUE INDEX index_on_users_nickname_c ON users USING btree (nickname COLLATE "C");
 
 CREATE TRIGGER before_insert
     BEFORE INSERT
-    ON public.post
+    ON post
     FOR EACH ROW
-EXECUTE PROCEDURE public.check_post_parent();
+EXECUTE PROCEDURE check_post_parent();
 
 CREATE TRIGGER insert_vote
     AFTER INSERT
-    ON public.vote
+    ON vote
     FOR EACH ROW
-EXECUTE PROCEDURE public.update_thread_votes();
+EXECUTE PROCEDURE update_thread_votes();
 
 CREATE TRIGGER update_forum_post
     AFTER INSERT
-    ON public.post
+    ON post
     FOR EACH ROW
-EXECUTE PROCEDURE public.update_post_quantity();
+EXECUTE PROCEDURE update_post_quantity();
 
 CREATE TRIGGER update_forum_thread
     AFTER INSERT
-    ON public.thread
+    ON thread
     FOR EACH ROW
-EXECUTE PROCEDURE public.update_thread_quantity();
+EXECUTE PROCEDURE update_thread_quantity();
 
 CREATE TRIGGER update_vote
     AFTER UPDATE
-    ON public.vote
+    ON vote
     FOR EACH ROW
-EXECUTE PROCEDURE public.update_thread_votes2();
+EXECUTE PROCEDURE update_thread_votes2();
 
-CREATE INDEX index_on_threads_forum_created ON public.thread (forum, created);
+CREATE INDEX index_on_threads_forum_created ON thread (forum, created);

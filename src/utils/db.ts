@@ -7,7 +7,7 @@ class Database {
     constructor() {
         this.pool = new Pool({
             host: 'localhost',
-            port: 5050,
+            port: 5432,
             database: 'forums',
             user: 'zotov',
             password: 'alex',
