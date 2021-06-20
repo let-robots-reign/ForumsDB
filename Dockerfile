@@ -6,15 +6,7 @@ ENV PGVER 12
 ENV PORT 5000
 EXPOSE $PORT
 
-RUN apt-get update
-RUN apt-get install -y curl gnupg2 wget
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt bionic-pgdg main" > /etc/apt/sources.list.d/PostgreSQL.list
-RUN apt-get update
-
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash
-RUN apt-get install -y nodejs
-RUN apt-get install -y postgresql-$PGVER
+RUN apt-get -y update && apt-get install -y tzdata && apt-get install -y postgresql-$PGVER && apt-get install -y nodejs npm
 
 RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/$PGVER/main/pg_hba.conf
 RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
