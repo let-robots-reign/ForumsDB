@@ -16,7 +16,7 @@ class PostController {
             return;
         }
 
-        const rq = await model.insertSeveral(posts, data);
+        const rq = await model.insertSeveralPosts(posts, data);
         if (rq.isError) {
             if (rq.message.includes('author')) {
                 res.status(STATUS_NOT_FOUND).json(<IError>{message: `Author not found`});
@@ -60,7 +60,7 @@ class PostController {
         const id = +req.params.id;
         const related = <string>req.query.related || '';
 
-        const rq = await model.fullData(id);
+        const rq = await model.getPostData(id);
         if (rq.isError) {
             res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
             return;
@@ -85,7 +85,7 @@ class PostController {
             message: req.body.message
         };
 
-        const rq = await model.update(post);
+        const rq = await model.updatePost(post);
         if (rq.isError) {
             res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
             return;

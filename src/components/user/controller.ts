@@ -22,7 +22,7 @@ class UserController {
             nickname: r.data
         };
 
-        const rq: IReturnQuery = await model.create(user);
+        const rq: IReturnQuery = await model.createUser(user);
 
         if (rq.isError) {
             if (+rq.code === DBConflictCode) {
@@ -78,7 +78,7 @@ class UserController {
             nickname: r.data
         };
 
-        const rq: IReturnQuery = await model.update(user);
+        const rq: IReturnQuery = await model.updateUser(user);
         if (rq.isError) {
             if (+rq.code === DBConflictCode) {
                 res.status(STATUS_CONFLICT).json(<IError>{message: `This email is already taken`});
@@ -102,7 +102,7 @@ class UserController {
     };
 
     forumUsers = async (req: e.Request, res: e.Response, data: IGetForumData) => {
-        const rq = await model.forumUsers(data);
+        const rq = await model.getUsersByForum(data);
         if (rq.isError) {
             res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
             return;

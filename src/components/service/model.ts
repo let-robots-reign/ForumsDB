@@ -12,14 +12,14 @@ class ServiceModel {
                                'thread', (SELECT COUNT(*) FROM thread),
                                'post', (SELECT COUNT(*) FROM post)
                            )
-                           as status
+                AS status
             `,
             values: []
         };
         return db.sendQuery(query);
     }
 
-    async truncateTables() {
+    async clearTables() {
         const query: IQuery = {
             name: 'clear_tables',
             text: `

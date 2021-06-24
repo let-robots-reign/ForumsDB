@@ -48,7 +48,7 @@ class ThreadModel {
             const query = {
                 name: '',
                 text: `SELECT
-                    tid as id, 
+                    tid AS id, 
                     author, 
                     created,                    
                     forum,
@@ -75,7 +75,7 @@ class ThreadModel {
                     `author,
                     created,
                     forum,
-                    tid as id,   
+                    tid AS id,   
                     message,
                     t.slug,
                     t.title,

@@ -25,10 +25,10 @@ class ForumController {
             threads: 0
         };
 
-        const rq = await model.create(forum);
+        const rq = await model.createForum(forum);
         if (rq.isError) {
             if (+rq.code === DBConflictCode) {
-                const confRes: IReturnQuery = await model.getOne(forum.slug);
+                const confRes: IReturnQuery = await model.getForum(forum.slug);
                 if (confRes.isError) {
                     res.status(STATUS_BAD_REQUEST).json(<IError>{message: confRes.message});
                     return;
@@ -52,7 +52,7 @@ class ForumController {
             return;
         }
 
-        const rq = await model.getOne(r.data);
+        const rq = await model.getForum(r.data);
         if (rq.isError) {
             res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
             return;
@@ -73,7 +73,7 @@ class ForumController {
             return;
         }
 
-        const forum = await model.getOne(r.data, false);
+        const forum = await model.getForum(r.data, false);
         if (forum.isError) {
             res.status(STATUS_BAD_REQUEST).json(<IError>{message: forum.message});
             return;
@@ -107,7 +107,7 @@ class ForumController {
         }
 
         const slug = r.data;
-        const rf = await model.getOne(slug, false);
+        const rf = await model.getForum(slug, false);
 
         if (rf.isError) {
             res.status(STATUS_BAD_REQUEST).json(<IError>{message: rf.message});

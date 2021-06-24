@@ -4,7 +4,7 @@ import {IGetForumData} from '../forum/interface';
 import {IUser} from './interface';
 
 class UserModel {
-    async create(user: IUser) {
+    async createUser(user: IUser) {
         const query: IQuery = {
             name: 'create_user',
             text: 'INSERT INTO users(about, email, fullname, nickname) VALUES ($1, $2, $3, $4)',
@@ -14,7 +14,7 @@ class UserModel {
         return db.sendQuery(query);
     }
 
-    async update(user: IUser) {
+    async updateUser(user: IUser) {
         const query: IQuery = {
             name: 'update_user',
             text: `
@@ -30,7 +30,7 @@ class UserModel {
         return db.sendQuery(query);
     }
 
-    async forumUsers(data: IGetForumData) {
+    async getUsersByForum(data: IGetForumData) {
         let sinceExpr = '';
         if (data.since) {
             sinceExpr = `AND nickname ${data.desc ? '<' : '>'} '${data.since}' COLLATE "C"`;
@@ -57,8 +57,10 @@ class UserModel {
     async getOne(nickname: string, full: boolean = true) {
         const query: IQuery = {
             name: `get_one_user_${full ? '1' : '2'}`,
-            text: `SELECT ${full ? 'about, email, fullname, nickname' : 'nickname'} 
-                    FROM users WHERE nickname = $1`,
+            text: `
+                SELECT ${full ? 'about, email, fullname, nickname' : 'nickname'} 
+                FROM users WHERE nickname = $1
+            `,
             values: [nickname]
         };
         return db.sendQuery(query);

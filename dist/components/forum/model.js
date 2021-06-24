@@ -28,7 +28,7 @@ class ForumModel {
         return __awaiter(this, void 0, void 0, function* () {
             const query = {
                 name: `get_one_forum_${full ? '1' : '2'}`,
-                text: `SELECT ${full ? 'posts, slug, threads, title, author as user' : 'slug'} FROM forum 
+                text: `SELECT ${full ? 'posts, slug, threads, title, author AS user' : 'slug'} FROM forum 
                    WHERE slug = $1`,
                 values: [slug]
             };

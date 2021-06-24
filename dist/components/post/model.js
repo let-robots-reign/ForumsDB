@@ -32,7 +32,7 @@ class PostModel {
                     post(forum, author, thread, parent_id, path, message)
                 VALUES ${values.join(',')}
                 RETURNING 
-                    pid as id,
+                    pid AS id,
                     created
             `,
                 values: []
@@ -78,10 +78,10 @@ class PostModel {
             SELECT author,
                    created,
                    forum,
-                   pid                    as id,
-                   is_edited              as "isEdited",
+                   pid                    AS id,
+                   is_edited              AS "isEdited",
                    message,
-                   COALESCE(parent_id, 0) as parent,
+                   COALESCE(parent_id, 0) AS parent,
                    thread
             FROM post
         `;
@@ -100,7 +100,7 @@ class PostModel {
                     {
                         select = `
                     WITH parents AS (
-                        SELECT pid as id FROM post 
+                        SELECT pid AS id FROM post 
                         ${where}
                         AND parent_id IS NULL
                         ${sinceExpr}
@@ -139,7 +139,7 @@ class PostModel {
                        created,
                        forum,
                        id,
-                       is_edited as "isEdited",
+                       is_edited AS "isEdited",
                        message,
                        parent,
                        thread
@@ -154,7 +154,7 @@ class PostModel {
         return __awaiter(this, void 0, void 0, function* () {
             const query = {
                 name: 'get_post_full',
-                text: `SELECT get_post_full($1) as post`,
+                text: `SELECT get_post_full($1) AS post`,
                 values: [id]
             };
             return db_1.default.sendQuery(query);

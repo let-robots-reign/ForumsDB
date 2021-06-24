@@ -133,10 +133,10 @@ BEGIN
             SELECT post.author,
                    post.created,
                    post.forum,
-                   post.pid       as id,
+                   post.pid       AS id,
                    post.is_edited,
                    post.message,
-                   post.parent_id as parent,
+                   post.parent_id AS parent,
                    post.thread
             FROM post
             WHERE pid = _id;

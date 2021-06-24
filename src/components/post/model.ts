@@ -4,29 +4,25 @@ import {IPost, IPostFilter, IPostUpdate} from './interface';
 import {IQuery} from '../base';
 
 class PostModel {
-    async insertSeveral(posts: IPost[], data: IThreadData) {
+    async insertSeveralPosts(posts: IPost[], data: IThreadData) {
         const values = []
         for (const p of posts) {
-            values.push(`('${data.forum}', 
-                        '${p.author}', 
-                        ${data.threadId},
-                        ${
-                p.parent === undefined ? `NULL, '{}'` :
-                    `${p.parent}, (SELECT path FROM post WHERE pid = ${p.parent}) || ${p.parent}`
-            },
-                        '${p.message}'
-                    )`);
+            values.push(
+                `('${data.forum}', 
+                '${p.author}', 
+                ${data.threadId},
+                ${p.parent === undefined ? `NULL, '{}'` :
+                `${p.parent}, (SELECT path FROM post WHERE pid = ${p.parent}) || ${p.parent}`},
+                '${p.message}')`
+            );
         }
 
         const query: IQuery = {
             name: '',
             text: `
-                INSERT INTO 
-                    post(forum, author, thread, parent_id, path, message)
-                VALUES ${values.join(',')}
-                RETURNING 
-                    pid as id,
-                    created
+                INSERT INTO post(forum, author, thread, parent_id, path, message)
+                VALUES ${values.join(',')} 
+                RETURNING pid AS id, created
             `,
             values: []
         };
@@ -68,14 +64,8 @@ class PostModel {
         const limit = `LIMIT $2`;
         const where = `WHERE thread = $1`;
         let select = `
-            SELECT author,
-                   created,
-                   forum,
-                   pid                    as id,
-                   is_edited              as "isEdited",
-                   message,
-                   COALESCE(parent_id, 0) as parent,
-                   thread
+            SELECT author, created, forum, pid AS id, is_edited AS "isEdited", message, 
+                   COALESCE(parent_id, 0) AS parent, thread
             FROM post
         `;
 
@@ -92,13 +82,12 @@ class PostModel {
             case 'parent_tree': {
                 select = `
                     WITH parents AS (
-                        SELECT pid as id FROM post 
-                        ${where}
+                        SELECT pid AS id
+                        FROM post ${where}
                         AND parent_id IS NULL
                         ${sinceExpr}
-                        ORDER BY id ${desc}
-                        ${limit}
-                    )
+                    ORDER BY id ${desc} ${limit}
+                        )
                 ` + select + `
                     WHERE root IN (SELECT id FROM parents)
                     ORDER BY root ${desc}, path
@@ -124,18 +113,11 @@ class PostModel {
         return db.sendQuery(query);
     }
 
-    async update(post: IPostUpdate) {
+    async updatePost(post: IPostUpdate) {
         const query: IQuery = {
             name: 'update_post',
             text: `
-                SELECT author,
-                       created,
-                       forum,
-                       id,
-                       is_edited as "isEdited",
-                       message,
-                       parent,
-                       thread
+                SELECT author, created, forum, id, is_edited AS "isEdited", message, parent, thread
                 FROM update_post($1, $2)
             `,
             values: [post.message, post.id]
@@ -143,10 +125,10 @@ class PostModel {
         return db.sendQuery(query);
     }
 
-    async fullData(id: number) {
+    async getPostData(id: number) {
         const query: IQuery = {
             name: 'get_post_full',
-            text: `SELECT get_post_full($1) as post`,
+            text: `SELECT get_post_full($1) AS post`,
             values: [id]
         };
         return db.sendQuery(query);

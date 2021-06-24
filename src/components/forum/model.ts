@@ -3,7 +3,7 @@ import {IQuery} from '../base';
 import {IForum} from './interface';
 
 class ForumModel {
-    async create(forum: IForum) {
+    async createForum(forum: IForum) {
         const query: IQuery = {
             name: 'create_forum',
             text: `INSERT INTO forum (author, slug, title)
@@ -14,10 +14,10 @@ class ForumModel {
         return db.sendQuery(query);
     }
 
-    async getOne(slug: string, full: boolean = true) {
+    async getForum(slug: string, full: boolean = true) {
         const query: IQuery = {
             name: `get_one_forum_${full ? '1' : '2'}`,
-            text: `SELECT ${full ? 'posts, slug, threads, title, author as user' : 'slug'} FROM forum 
+            text: `SELECT ${full ? 'posts, slug, threads, title, author AS user' : 'slug'} FROM forum 
                    WHERE slug = $1`,
             values: [slug]
         };

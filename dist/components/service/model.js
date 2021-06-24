@@ -24,7 +24,7 @@ class ServiceModel {
                                'thread', (SELECT COUNT(*) FROM thread),
                                'post', (SELECT COUNT(*) FROM post)
                            )
-                           as status
+                           AS status
             `,
                 values: []
             };

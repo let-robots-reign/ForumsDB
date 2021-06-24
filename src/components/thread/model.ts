@@ -7,10 +7,10 @@ class ThreadModel {
     async create(thread: IThread) {
         const query: IQuery = {
             name: '',
-            text: `INSERT INTO thread 
-                        (forum, author, created, message, ${thread.slug ? `slug,` : ''} title) 
-                   VALUES ($1, $2, $3, $4, ${thread.slug ? `'${thread.slug}',` : ''} $5) 
-                       RETURNING tid, slug`,
+            text: `
+                INSERT INTO thread (forum, author, created, message, ${thread.slug ? `slug,` : ''} title) 
+                VALUES ($1, $2, $3, $4, ${thread.slug ? `'${thread.slug}',` : ''} $5) 
+                RETURNING tid, slug`,
             values: [thread.forum, thread.author, thread.created, thread.message, thread.title]
         };
 
@@ -21,9 +21,9 @@ class ThreadModel {
         const query: IQuery = {
             name: 'update_thread',
             text: `UPDATE thread
-                   SET message = COALESCE($1, message),
-                       title   = COALESCE($2, title)
-                   WHERE tid = $3 RETURNING message, title`,
+                   SET message = COALESCE($1, message), title   = COALESCE($2, title)
+                   WHERE tid = $3 
+                   RETURNING message, title`,
             values: [thread.message, thread.title, thread.id]
         };
         return db.sendQuery(query);
@@ -37,15 +37,7 @@ class ThreadModel {
 
         const query: IQuery = {
             name: '',
-            text: `SELECT
-                    tid as id, 
-                    author, 
-                    created,                    
-                    forum,
-                    message,
-                    t.slug,
-                    t.title,
-                    votes
+            text: `SELECT tid AS id, author, created, forum, message, t.slug, t.title, votes
                    FROM thread t
                    WHERE forum = $1
                    ${sinceExpr}  
@@ -61,17 +53,10 @@ class ThreadModel {
     async getOne(data: string | number, full: boolean = true) {
         const query: IQuery = {
             name: ``,
-            text: `SELECT ${full ?
-                `author,
-                    created,
-                    forum,
-                    tid as id,   
-                    message,
-                    t.slug,
-                    t.title,
-                    votes FROM thread t `
+            text: `SELECT ${
+                full ? `author, created, forum, tid AS id, message, t.slug, t.title, votes FROM thread t `
                 : `t.tid FROM thread t`
-            } 
+                } 
                 WHERE ${typeof data === 'string' ? 't.slug' : 't.tid'} = $1 `,
             values: [data]
         };
