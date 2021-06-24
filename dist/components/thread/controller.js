@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -16,13 +17,15 @@ const db_codes_1 = require("../../utils/db_codes");
 const controller_1 = __importDefault(require("../post/controller"));
 const controller_2 = __importDefault(require("../user/controller"));
 const controller_3 = __importDefault(require("../vote/controller"));
+const http_codes_1 = require("../../utils/http_codes");
 class ThreadController {
     constructor() {
         this.create = (req, res, forum) => __awaiter(this, void 0, void 0, function* () {
             const author = req.body.author;
             const user = yield controller_2.default.getUser(req, res, author);
-            if (user.error)
+            if (user.error) {
                 return;
+            }
             const thread = {
                 author: user.data.nickname,
                 created: req.body.created,
@@ -37,29 +40,31 @@ class ThreadController {
                 if (+rq.code === db_codes_1.DBConflictCode) {
                     const confRes = yield model_1.default.getOne(thread.slug);
                     if (confRes.isError) {
-                        res.status(STATUS_BAD_REQUEST).json({ message: confRes.message });
+                        res.status(http_codes_1.STATUS_BAD_REQUEST).json({ message: confRes.message });
                         return;
                     }
-                    res.status(STATUS_CONFLICT).json(confRes.data.rows[0]);
+                    res.status(http_codes_1.STATUS_CONFLICT).json(confRes.data.rows[0]);
                     return;
                 }
-                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
+                res.status(http_codes_1.STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
             thread.id = rq.data.rows[0].tid;
             thread.forum = forum.slug;
-            res.status(STATUS_CREATED).json(thread);
+            res.status(http_codes_1.STATUS_CREATED).json(thread);
         });
         this.details = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const r = yield this.getIdentifier(req, res);
-            if (r.error)
+            if (r.error) {
                 return;
+            }
             res.json(r.data);
         });
         this.update = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const r = yield this.getIdentifier(req, res);
-            if (r.error)
+            if (r.error) {
                 return;
+            }
             const thread = r.data;
             const threadUpdate = {
                 id: thread.id || 0,
@@ -68,7 +73,7 @@ class ThreadController {
             };
             const rq = yield model_1.default.update(threadUpdate);
             if (rq.isError) {
-                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
+                res.status(http_codes_1.STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
             thread.message = rq.data.rows[0].message;
@@ -78,15 +83,16 @@ class ThreadController {
         this.forumThreads = (req, res, data) => __awaiter(this, void 0, void 0, function* () {
             const rq = yield model_1.default.forumThreads(data);
             if (rq.isError) {
-                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
+                res.status(http_codes_1.STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
-            res.status(STATUS_OK).json(rq.data.rows);
+            res.status(http_codes_1.STATUS_OK).json(rq.data.rows);
         });
         this.createPosts = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const r = yield this.getIdentifier(req, res);
-            if (r.error)
+            if (r.error) {
                 return;
+            }
             const data = {
                 threadId: r.data.id,
                 forum: r.data.forum
@@ -95,8 +101,9 @@ class ThreadController {
         });
         this.getPosts = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const r = yield this.getIdentifier(req, res);
-            if (r.error)
+            if (r.error) {
                 return;
+            }
             const data = {
                 threadId: r.data.id,
                 forum: r.data.forum
@@ -105,22 +112,24 @@ class ThreadController {
         });
         this.vote = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const r = yield this.getIdentifier(req, res);
-            if (r.error)
+            if (r.error) {
                 return;
+            }
             yield controller_3.default.create(req, res, r.data);
         });
         this.getIdentifier = (req, res) => __awaiter(this, void 0, void 0, function* () {
             let identifier = req.params.slug_or_id;
             // @ts-ignore
-            if (!isNaN(identifier))
+            if (!isNaN(identifier)) {
                 identifier = +identifier;
+            }
             const thread = yield model_1.default.getOne(identifier);
             if (thread.isError) {
-                res.status(STATUS_BAD_REQUEST).json({ message: thread.message });
+                res.status(http_codes_1.STATUS_BAD_REQUEST).json({ message: thread.message });
                 return { error: true };
             }
             if (!thread.data.rowCount) {
-                res.status(STATUS_NOT_FOUND).json({ message: `Thread by this identifier ${identifier} not found` });
+                res.status(http_codes_1.STATUS_NOT_FOUND).json({ message: `Thread by identifier ${identifier} not found` });
                 return { error: true };
             }
             return {

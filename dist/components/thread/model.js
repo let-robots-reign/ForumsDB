@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -17,10 +18,10 @@ class ThreadModel {
         return __awaiter(this, void 0, void 0, function* () {
             const query = {
                 name: '',
-                text: `INSERT INTO thread 
-                        (forum, author, created, message, ${thread.slug ? `slug,` : ''} title) 
-                   VALUES ($1, $2, $3, $4, ${thread.slug ? `'${thread.slug}',` : ''} $5) 
-                       RETURNING tid, slug`,
+                text: `
+                INSERT INTO thread (forum, author, created, message, ${thread.slug ? `slug,` : ''} title) 
+                VALUES ($1, $2, $3, $4, ${thread.slug ? `'${thread.slug}',` : ''} $5) 
+                RETURNING tid, slug`,
                 values: [thread.forum, thread.author, thread.created, thread.message, thread.title]
             };
             return db_1.default.sendQuery(query);
@@ -31,9 +32,9 @@ class ThreadModel {
             const query = {
                 name: 'update_thread',
                 text: `UPDATE thread
-                   SET message = COALESCE($1, message),
-                       title   = COALESCE($2, title)
-                   WHERE tid = $3 RETURNING message, title`,
+                   SET message = COALESCE($1, message), title   = COALESCE($2, title)
+                   WHERE tid = $3 
+                   RETURNING message, title`,
                 values: [thread.message, thread.title, thread.id]
             };
             return db_1.default.sendQuery(query);
@@ -47,15 +48,7 @@ class ThreadModel {
             }
             const query = {
                 name: '',
-                text: `SELECT
-                    tid AS id, 
-                    author, 
-                    created,                    
-                    forum,
-                    message,
-                    t.slug,
-                    t.title,
-                    votes
+                text: `SELECT tid AS id, author, created, forum, message, t.slug, t.title, votes
                    FROM thread t
                    WHERE forum = $1
                    ${sinceExpr}  
@@ -71,15 +64,7 @@ class ThreadModel {
         return __awaiter(this, void 0, void 0, function* () {
             const query = {
                 name: ``,
-                text: `SELECT ${full ?
-                    `author,
-                    created,
-                    forum,
-                    tid AS id,   
-                    message,
-                    t.slug,
-                    t.title,
-                    votes FROM thread t `
+                text: `SELECT ${full ? `author, created, forum, tid AS id, message, t.slug, t.title, votes FROM thread t `
                     : `t.tid FROM thread t`} 
                 WHERE ${typeof data === 'string' ? 't.slug' : 't.tid'} = $1 `,
                 values: [data]
