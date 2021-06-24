@@ -18,7 +18,7 @@ class UserController {
         this.create = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const r = this.getNickname(req);
             if (r.error) {
-                res.status(400).json({ message: 'Nickname is not given' });
+                res.status(STATUS_BAD_REQUEST).json({ message: 'Nickname is not given' });
                 return;
             }
             const profile = req.body;
@@ -33,30 +33,30 @@ class UserController {
                 if (+rq.code === db_codes_1.DBConflictCode) {
                     const confRes = yield model_1.default.getConflicted(user);
                     if (confRes.isError) {
-                        res.status(400).json({ message: confRes.message });
+                        res.status(STATUS_BAD_REQUEST).json({ message: confRes.message });
                         return;
                     }
-                    res.status(409).json(confRes.data.rows);
+                    res.status(STATUS_CONFLICT).json(confRes.data.rows);
                     return;
                 }
-                res.status(400).json({ message: rq.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
-            res.status(201).json(user);
+            res.status(STATUS_CREATED).json(user);
         });
         this.getProfile = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const r = this.getNickname(req);
             if (r.error) {
-                res.status(400).json({ message: 'Nickname is not given' });
+                res.status(STATUS_BAD_REQUEST).json({ message: 'Nickname is not given' });
                 return;
             }
             const rq = yield model_1.default.getOne(r.data);
             if (rq.isError) {
-                res.status(400).json({ message: rq.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
             if (rq.data.rows.length === 0) {
-                res.status(404).json({ message: 'User not found' });
+                res.status(STATUS_NOT_FOUND).json({ message: 'User not found' });
                 return;
             }
             res.json(rq.data.rows[0]);
@@ -64,7 +64,7 @@ class UserController {
         this.updateProfile = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const r = this.getNickname(req);
             if (r.error) {
-                res.status(400).json({ message: 'Nickname is not given' });
+                res.status(STATUS_BAD_REQUEST).json({ message: 'Nickname is not given' });
                 return;
             }
             const profile = req.body;
@@ -77,38 +77,38 @@ class UserController {
             const rq = yield model_1.default.update(user);
             if (rq.isError) {
                 if (+rq.code === db_codes_1.DBConflictCode) {
-                    res.status(409).json({ message: `This email is already registered by user` });
+                    res.status(STATUS_CONFLICT).json({ message: `This email is already registered by user` });
                     return;
                 }
-                res.status(400).json({ message: rq.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
             if (!rq.data.rowCount) {
-                res.status(404).json({ message: `User ${user.nickname} not found` });
+                res.status(STATUS_NOT_FOUND).json({ message: `User ${user.nickname} not found` });
                 return;
             }
             const _user = rq.data.rows[0];
             user.about = _user.about;
             user.fullname = _user.fullname;
             user.email = _user.email;
-            res.status(200).json(user);
+            res.status(STATUS_OK).json(user);
         });
         this.forumUsers = (req, res, data) => __awaiter(this, void 0, void 0, function* () {
             const rq = yield model_1.default.forumUsers(data);
             if (rq.isError) {
-                res.status(400).json({ message: rq.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
-            res.status(200).json(rq.data.rows);
+            res.status(STATUS_OK).json(rq.data.rows);
         });
         this.getUser = (req, res, nickname) => __awaiter(this, void 0, void 0, function* () {
             const user = yield model_1.default.getOne(nickname, false);
             if (user.isError) {
-                res.status(400).json({ message: user.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: user.message });
                 return { error: true };
             }
             if (!user.data.rowCount) {
-                res.status(404).json({ message: `User ${nickname} not found` });
+                res.status(STATUS_NOT_FOUND).json({ message: `User ${nickname} not found` });
                 return { error: true };
             }
             return {

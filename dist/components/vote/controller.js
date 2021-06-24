@@ -24,10 +24,10 @@ class VoteController {
             const rq = yield model_1.default.createOrUpdate(vote);
             if (rq.isError) {
                 if (+rq.code === 23503 || +rq.code === db_codes_1.DBNullColumnCode) {
-                    res.status(404).json({ message: `User by nickname ${vote.nickname} not found` });
+                    res.status(STATUS_NOT_FOUND).json({ message: `User by nickname ${vote.nickname} not found` });
                 }
                 else {
-                    res.status(400).json({ message: rq.message });
+                    res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 }
                 return;
             }

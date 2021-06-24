@@ -17,7 +17,7 @@ class ServiceController {
         this.status = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const rq = yield model_1.default.getTablesStatus();
             if (rq.isError) {
-                res.status(400).json({ message: rq.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
             res.json(rq.data.rows[0].status);
@@ -25,7 +25,7 @@ class ServiceController {
         this.clear = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const rq = yield model_1.default.truncateTables();
             if (rq.isError) {
-                res.status(400).json({ message: rq.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
             res.json('Clear successfully finished!!!');

@@ -7,12 +7,15 @@ import voteController from '../vote/controller';
 import {IThread, IThreadData, IThreadUpdate} from './interface';
 import {IForum, IGetForumData} from '../forum/interface';
 import {IError, IReturn, IReturnQuery} from '../base';
+import {STATUS_BAD_REQUEST, STATUS_CONFLICT, STATUS_CREATED, STATUS_NOT_FOUND, STATUS_OK} from '../../utils/http_codes';
 
 class ThreadController {
     create = async (req: e.Request, res: e.Response, forum: IForum) => {
         const author = req.body.author;
         const user = await userController.getUser(req, res, author);
-        if (user.error) return;
+        if (user.error) {
+            return;
+        }
 
         const thread: IThread = {
             author: user.data.nickname,
@@ -29,31 +32,35 @@ class ThreadController {
             if (+rq.code === DBConflictCode) {
                 const confRes: IReturnQuery = await model.getOne(thread.slug);
                 if (confRes.isError) {
-                    res.status(400).json(<IError>{message: confRes.message});
+                    res.status(STATUS_BAD_REQUEST).json(<IError>{message: confRes.message});
                     return;
                 }
 
-                res.status(409).json(confRes.data.rows[0]);
+                res.status(STATUS_CONFLICT).json(confRes.data.rows[0]);
                 return;
             }
-            res.status(400).json(<IError>{message: rq.message});
+            res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
             return;
         }
 
         thread.id = rq.data.rows[0].tid;
         thread.forum = forum.slug;
-        res.status(201).json(thread);
+        res.status(STATUS_CREATED).json(thread);
     };
 
     details = async (req: e.Request, res: e.Response) => {
         const r: IReturn<any[]> = await this.getIdentifier(req, res);
-        if (r.error) return;
+        if (r.error) {
+            return;
+        }
         res.json(r.data);
     };
 
     update = async (req: e.Request, res: e.Response) => {
         const r: IReturn<any> = await this.getIdentifier(req, res);
-        if (r.error) return;
+        if (r.error) {
+            return;
+        }
 
         const thread: IThread = r.data;
         const threadUpdate: IThreadUpdate = {
@@ -64,7 +71,7 @@ class ThreadController {
 
         const rq = await model.update(threadUpdate);
         if (rq.isError) {
-            res.status(400).json(<IError>{message: rq.message});
+            res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
             return;
         }
 
@@ -76,16 +83,18 @@ class ThreadController {
     forumThreads = async (req: e.Request, res: e.Response, data: IGetForumData) => {
         const rq = await model.forumThreads(data);
         if (rq.isError) {
-            res.status(400).json(<IError>{message: rq.message});
+            res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
             return;
         }
 
-        res.status(200).json(rq.data.rows);
+        res.status(STATUS_OK).json(rq.data.rows);
     };
 
     createPosts = async (req: e.Request, res: e.Response) => {
         const r: IReturn<any> = await this.getIdentifier(req, res);
-        if (r.error) return;
+        if (r.error) {
+            return;
+        }
 
         const data: IThreadData = {
             threadId: r.data.id,
@@ -97,7 +106,9 @@ class ThreadController {
 
     getPosts = async (req: e.Request, res: e.Response) => {
         const r: IReturn<any> = await this.getIdentifier(req, res);
-        if (r.error) return;
+        if (r.error) {
+            return;
+        }
 
         const data: IThreadData = {
             threadId: r.data.id,
@@ -119,12 +130,12 @@ class ThreadController {
         const thread = await model.getOne(identifier);
 
         if (thread.isError) {
-            res.status(400).json(<IError>{message: thread.message});
+            res.status(STATUS_BAD_REQUEST).json(<IError>{message: thread.message});
             return <IReturn<any>>{error: true};
         }
 
         if (!thread.data.rowCount) {
-            res.status(404).json(<IError>{message: `Thread by this identifier ${identifier} not found`});
+            res.status(STATUS_NOT_FOUND).json(<IError>{message: `Thread by this identifier ${identifier} not found`});
             return <IReturn<any>>{error: true};
         }
 

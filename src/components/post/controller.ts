@@ -3,21 +3,25 @@ import model from './model';
 import {IPost, IPostFilter, IPostUpdate} from './interface';
 import {IError} from '../base';
 import {IThreadData} from '../thread/interface';
+import {STATUS_BAD_REQUEST, STATUS_CONFLICT, STATUS_CREATED, STATUS_NOT_FOUND} from '../../utils/http_codes';
+
+const DEFAULT_LIMIT = 100;
+const DEFAULT_SORT = 'flat';
 
 class PostController {
     create = async (req: e.Request, res: e.Response, data: IThreadData) => {
         const posts: IPost[] = req.body;
         if (!posts.length) {
-            res.status(201).json([]);
+            res.status(STATUS_CREATED).json([]);
             return;
         }
 
         const rq = await model.insertSeveral(posts, data);
         if (rq.isError) {
             if (rq.message.includes('author')) {
-                res.status(404).json(<IError>{message: `Author not found`});
+                res.status(STATUS_NOT_FOUND).json(<IError>{message: `Author not found`});
             } else {
-                res.status(409).json(<IError>{message: rq.message});
+                res.status(STATUS_CONFLICT).json(<IError>{message: rq.message});
             }
             return;
         }
@@ -30,22 +34,22 @@ class PostController {
             posts[i].id = p.id;
         }
 
-        res.status(201).json(posts);
+        res.status(STATUS_CREATED).json(posts);
     };
 
     threadPosts = async (req: e.Request, res: e.Response, data: IThreadData) => {
         const filter: IPostFilter = {
             threadId: data.threadId,
             forum: data.forum.toString(),
-            limit: (req.query.limit) ? +req.query.limit : 100,
+            limit: (req.query.limit) ? +req.query.limit : DEFAULT_LIMIT,
             since: (req.query.since) ? +req.query.since : undefined,
-            sort: (req.query.sort) ? <string>req.query.sort : 'flat',
+            sort: (req.query.sort) ? <string>req.query.sort : DEFAULT_SORT,
             desc: req.query.desc ? JSON.parse(<string>req.query.desc) : req.query.desc
         };
 
         const rq = await model.getThreadPosts(filter);
         if (rq.isError) {
-            res.status(400).json(<IError>{message: rq.message});
+            res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
             return;
         }
 
@@ -58,12 +62,12 @@ class PostController {
 
         const rq = await model.fullData(id);
         if (rq.isError) {
-            res.status(400).json(<IError>{message: rq.message});
+            res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
             return;
         }
 
         if (!rq.data.rowCount) {
-            res.status(404).json(<IError>{message: `Post by id ${id} not found`});
+            res.status(STATUS_NOT_FOUND).json(<IError>{message: `Post by id ${id} not found`});
             return;
         }
 
@@ -83,12 +87,12 @@ class PostController {
 
         const rq = await model.update(post);
         if (rq.isError) {
-            res.status(400).json(<IError>{message: rq.message});
+            res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
             return;
         }
 
         if (!rq.data.rowCount) {
-            res.status(404).json(<IError>{message: `Post by id ${post.id} not found`});
+            res.status(STATUS_NOT_FOUND).json(<IError>{message: `Post by id ${post.id} not found`});
             return;
         }
 

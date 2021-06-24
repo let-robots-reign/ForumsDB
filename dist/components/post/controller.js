@@ -17,16 +17,16 @@ class PostController {
         this.create = (req, res, data) => __awaiter(this, void 0, void 0, function* () {
             const posts = req.body;
             if (!posts.length) {
-                res.status(201).json([]);
+                res.status(STATUS_CREATED).json([]);
                 return;
             }
             const rq = yield model_1.default.insertSeveral(posts, data);
             if (rq.isError) {
                 if (rq.message.includes('author')) {
-                    res.status(404).json({ message: `Author not found` });
+                    res.status(STATUS_NOT_FOUND).json({ message: `Author not found` });
                 }
                 else {
-                    res.status(409).json({ message: rq.message });
+                    res.status(STATUS_CONFLICT).json({ message: rq.message });
                 }
                 return;
             }
@@ -37,7 +37,7 @@ class PostController {
                 posts[i].created = p.created;
                 posts[i].id = p.id;
             }
-            res.status(201).json(posts);
+            res.status(STATUS_CREATED).json(posts);
         });
         this.threadPosts = (req, res, data) => __awaiter(this, void 0, void 0, function* () {
             const filter = {
@@ -50,7 +50,7 @@ class PostController {
             };
             const rq = yield model_1.default.getThreadPosts(filter);
             if (rq.isError) {
-                res.status(400).json({ message: rq.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
             res.json(rq.data.rows);
@@ -60,11 +60,11 @@ class PostController {
             const related = req.query.related || '';
             const rq = yield model_1.default.fullData(id);
             if (rq.isError) {
-                res.status(400).json({ message: rq.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
             if (!rq.data.rowCount) {
-                res.status(404).json({ message: `Post by id ${id} not found` });
+                res.status(STATUS_NOT_FOUND).json({ message: `Post by id ${id} not found` });
                 return;
             }
             const postFull = rq.data.rows[0].post;
@@ -83,11 +83,11 @@ class PostController {
             };
             const rq = yield model_1.default.update(post);
             if (rq.isError) {
-                res.status(400).json({ message: rq.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
             if (!rq.data.rowCount) {
-                res.status(404).json({ message: `Post by id ${post.id} not found` });
+                res.status(STATUS_NOT_FOUND).json({ message: `Post by id ${post.id} not found` });
                 return;
             }
             const upPost = rq.data.rows[0];

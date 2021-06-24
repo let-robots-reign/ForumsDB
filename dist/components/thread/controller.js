@@ -37,18 +37,18 @@ class ThreadController {
                 if (+rq.code === db_codes_1.DBConflictCode) {
                     const confRes = yield model_1.default.getOne(thread.slug);
                     if (confRes.isError) {
-                        res.status(400).json({ message: confRes.message });
+                        res.status(STATUS_BAD_REQUEST).json({ message: confRes.message });
                         return;
                     }
-                    res.status(409).json(confRes.data.rows[0]);
+                    res.status(STATUS_CONFLICT).json(confRes.data.rows[0]);
                     return;
                 }
-                res.status(400).json({ message: rq.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
             thread.id = rq.data.rows[0].tid;
             thread.forum = forum.slug;
-            res.status(201).json(thread);
+            res.status(STATUS_CREATED).json(thread);
         });
         this.details = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const r = yield this.getIdentifier(req, res);
@@ -68,7 +68,7 @@ class ThreadController {
             };
             const rq = yield model_1.default.update(threadUpdate);
             if (rq.isError) {
-                res.status(400).json({ message: rq.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
             thread.message = rq.data.rows[0].message;
@@ -78,10 +78,10 @@ class ThreadController {
         this.forumThreads = (req, res, data) => __awaiter(this, void 0, void 0, function* () {
             const rq = yield model_1.default.forumThreads(data);
             if (rq.isError) {
-                res.status(400).json({ message: rq.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: rq.message });
                 return;
             }
-            res.status(200).json(rq.data.rows);
+            res.status(STATUS_OK).json(rq.data.rows);
         });
         this.createPosts = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const r = yield this.getIdentifier(req, res);
@@ -116,11 +116,11 @@ class ThreadController {
                 identifier = +identifier;
             const thread = yield model_1.default.getOne(identifier);
             if (thread.isError) {
-                res.status(400).json({ message: thread.message });
+                res.status(STATUS_BAD_REQUEST).json({ message: thread.message });
                 return { error: true };
             }
             if (!thread.data.rowCount) {
-                res.status(404).json({ message: `Thread by this identifier ${identifier} not found` });
+                res.status(STATUS_NOT_FOUND).json({ message: `Thread by this identifier ${identifier} not found` });
                 return { error: true };
             }
             return {
