@@ -48,7 +48,7 @@ class ForumController {
     details = async (req: e.Request, res: e.Response) => {
         const r = this.getSlug(req);
         if (r.error) {
-            res.status(STATUS_BAD_REQUEST).json(<IError>{message: 'Slug is not given'});
+            res.status(STATUS_BAD_REQUEST).json(<IError>{message: 'Slug is not specified'});
             return;
         }
 
@@ -69,7 +69,7 @@ class ForumController {
     threads = async (req: e.Request, res: e.Response) => {
         const r = this.getSlug(req);
         if (r.error) {
-            res.status(STATUS_BAD_REQUEST).json(<IError>{message: 'Slug is not given'});
+            res.status(STATUS_BAD_REQUEST).json(<IError>{message: 'Slug is not specified'});
             return;
         }
 
@@ -102,7 +102,7 @@ class ForumController {
     createThread = async (req: e.Request, res: e.Response) => {
         const r = this.getSlug(req);
         if (r.error) {
-            res.status(STATUS_BAD_REQUEST).json(<IError>{message: 'Slug is not given'});
+            res.status(STATUS_BAD_REQUEST).json(<IError>{message: 'Slug is not specified'});
             return;
         }
 
@@ -136,8 +136,9 @@ class ForumController {
         } else {
             result.error = true;
         }
+
         return result;
-    }
+    };
 }
 
 export default new ForumController();

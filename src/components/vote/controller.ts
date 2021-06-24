@@ -17,7 +17,7 @@ class VoteController {
         const rq = await model.createOrUpdate(vote);
         if (rq.isError) {
             if (+rq.code === DBForeignKeyViolate || +rq.code === DBNullColumnCode) {
-                res.status(STATUS_NOT_FOUND).json(<IError>{message: `User by nickname ${vote.nickname} not found`});
+                res.status(STATUS_NOT_FOUND).json(<IError>{message: `User with nickname ${vote.nickname} not found`});
             } else {
                 res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
             }
@@ -26,6 +26,7 @@ class VoteController {
 
         // @ts-ignore
         thread.votes += rq.data.rows[0].update_vote;
+
         res.json(thread);
     };
 }

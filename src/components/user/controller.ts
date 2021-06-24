@@ -10,7 +10,7 @@ class UserController {
     create = async (req: e.Request, res: e.Response) => {
         const r = UserController.getNickname(req);
         if (r.error) {
-            res.status(STATUS_BAD_REQUEST).json(<IError>{message: 'Nickname is not given'});
+            res.status(STATUS_BAD_REQUEST).json(<IError>{message: 'Nickname is not specified'});
             return;
         }
 
@@ -45,7 +45,7 @@ class UserController {
     getProfile = async (req: e.Request, res: e.Response) => {
         const r = UserController.getNickname(req);
         if (r.error) {
-            res.status(STATUS_BAD_REQUEST).json({message: 'Nickname is not given'});
+            res.status(STATUS_BAD_REQUEST).json({message: 'Nickname is not specified'});
             return;
         }
 
@@ -66,7 +66,7 @@ class UserController {
     updateProfile = async (req: e.Request, res: e.Response) => {
         const r = UserController.getNickname(req);
         if (r.error) {
-            res.status(STATUS_BAD_REQUEST).json(<IError>{message: 'Nickname is not given'});
+            res.status(STATUS_BAD_REQUEST).json(<IError>{message: 'Nickname is not specified'});
             return;
         }
 
@@ -81,7 +81,7 @@ class UserController {
         const rq: IReturnQuery = await model.update(user);
         if (rq.isError) {
             if (+rq.code === DBConflictCode) {
-                res.status(STATUS_CONFLICT).json(<IError>{message: `This email is already registered by user`});
+                res.status(STATUS_CONFLICT).json(<IError>{message: `This email is already taken`});
                 return;
             }
             res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
@@ -97,6 +97,7 @@ class UserController {
         user.about = _user.about;
         user.fullname = _user.fullname;
         user.email = _user.email;
+
         res.status(STATUS_OK).json(user);
     };
 
@@ -106,6 +107,7 @@ class UserController {
             res.status(STATUS_BAD_REQUEST).json(<IError>{message: rq.message});
             return;
         }
+
         res.status(STATUS_OK).json(rq.data.rows);
     };
 
@@ -135,8 +137,9 @@ class UserController {
         } else {
             result.error = true;
         }
+
         return result;
-    }
+    };
 }
 
 export default new UserController();

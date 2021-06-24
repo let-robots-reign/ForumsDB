@@ -21,7 +21,7 @@ class ServiceController {
             return;
         }
 
-        res.json('Clear successfully finished!!!')
+        res.json('All tables have been cleared');
     };
 }
 

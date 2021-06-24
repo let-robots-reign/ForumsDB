@@ -99,6 +99,7 @@ class PostController {
         const upPost = rq.data.rows[0];
         if (!upPost.parent) delete upPost.parent;
         if (!upPost.isEdited) delete upPost.isEdited;
+
         res.json(upPost);
     };
 }

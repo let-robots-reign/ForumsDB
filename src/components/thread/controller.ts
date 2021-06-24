@@ -45,6 +45,7 @@ class ThreadController {
 
         thread.id = rq.data.rows[0].tid;
         thread.forum = forum.slug;
+
         res.status(STATUS_CREATED).json(thread);
     };
 
@@ -53,6 +54,7 @@ class ThreadController {
         if (r.error) {
             return;
         }
+
         res.json(r.data);
     };
 
@@ -77,6 +79,7 @@ class ThreadController {
 
         thread.message = rq.data.rows[0].message;
         thread.title = rq.data.rows[0].title;
+
         res.json(thread);
     };
 
@@ -119,14 +122,18 @@ class ThreadController {
 
     vote = async (req: e.Request, res: e.Response) => {
         const r: IReturn<any> = await this.getIdentifier(req, res);
-        if (r.error) return;
+        if (r.error) {
+            return;
+        }
         await voteController.create(req, res, r.data);
     };
 
     private getIdentifier = async (req: e.Request, res: e.Response) => {
         let identifier = req.params.slug_or_id;
         // @ts-ignore
-        if (!isNaN(identifier)) identifier = +identifier;
+        if (!isNaN(identifier)) {
+            identifier = +identifier;
+        }
         const thread = await model.getOne(identifier);
 
         if (thread.isError) {
@@ -135,7 +142,7 @@ class ThreadController {
         }
 
         if (!thread.data.rowCount) {
-            res.status(STATUS_NOT_FOUND).json(<IError>{message: `Thread by this identifier ${identifier} not found`});
+            res.status(STATUS_NOT_FOUND).json(<IError>{message: `Thread by identifier ${identifier} not found`});
             return <IReturn<any>>{error: true};
         }
 
